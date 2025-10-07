@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: delivery-api
+  name: delivery-api
+spec:
+  type: NodePort
+  ports:
+    - name: "delivery-api"
+      port: 9999
+      targetPort: 9999
+      nodePort: 31002
+  selector:
+    app: delivery-api
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: delivery-api
+  name: delivery-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delivery-api
+  template:
+    metadata:
+      annotations:
+        dapr.io/app-id: delivery-api
+        dapr.io/app-port: "9999"
+        dapr.io/enabled: "true"
+        dapr.io/config: "tracing"
+      labels:
+        app: delivery-api
+    spec:
+      containers:
+        - image: localhost:5001/dapr/delivery-api
+          name: delivery-api
+          imagePullPolicy: Always
+          env:
+            - name: QUARKUS_HTTP_PORT
+              value: "9999"
+          ports:
+            - containerPort: 9999
+              name: delivery-api
