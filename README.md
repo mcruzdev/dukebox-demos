@@ -1,9 +1,19 @@
 # DukeBox Demos
 
-## Buy a box
+## DukeBox application with Dapr
+
+If you want to try this application, look the following [documentation](/k8s/README.md).
+
+## System Diagram
+
+![c4-diagram](c4-diagram.svg)
+
+### Screenshot
+
+Home page:
 
 ![dukebox-home](dukebox-home.png)
 
-## See the status
+Look Order status:
 
 ![dukebox-order-statusees](dukebox-order-statuses.png)
