@@ -1,0 +1,21 @@
+<div class="flex flex-row gap-x-4 items-center justify-center">
+
+  @for (gift of gifts(); track $index) {
+  <p-card [style]="{ width: '25rem', overflow: 'hidden' }">
+
+    <ng-template #header>
+      <p-image [preview]="true" class="w-full h-[150px] justify-center p-4" [src]="gift.image" />
+    </ng-template>
+
+    <ng-template #title>{{ gift.name }}</ng-template>
+    <ng-template #subtitle>{{ gift.price | currency}}</ng-template>
+
+    <ng-template #footer>
+      <div class="flex gap-4 mt-1">
+        <p-button label="Buy" class="w-full" styleClass="w-full" severity="danger" (onClick)="buy(gift)" />
+      </div>
+    </ng-template>
+  </p-card>
+  }
+
+</div>

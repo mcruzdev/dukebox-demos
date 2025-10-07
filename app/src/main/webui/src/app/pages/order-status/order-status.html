@@ -1,0 +1,57 @@
+<div class="flex flex-row items-center justify-center gap-x-8">
+
+  <p-stepper [value]="status()" class="basis-[50rem]" [linear]="true">
+    <p-step-list>
+      <p-step [value]="1">Order received</p-step>
+      <p-step [value]="2">Preparing your Order</p-step>
+      <p-step [value]="3">Order in transit</p-step>
+      <p-step [value]="4">Order delivered</p-step>
+    </p-step-list>
+    <p-step-panels>
+      <p-step-panel [value]="1">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="flex flex-col h-48">
+            <div
+              class="border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex-auto flex justify-center items-center font-medium">
+              DukeBox received your order 🔥🔥🔥
+            </div>
+          </div>
+        </ng-template>
+      </p-step-panel>
+
+      <p-step-panel [value]="2">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="flex flex-col h-48">
+            <div
+              class="border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex-auto flex justify-center items-center font-medium">
+              DukeBox is preparing your order ⭐⭐⭐
+            </div>
+          </div>
+        </ng-template>
+      </p-step-panel>
+
+      <p-step-panel [value]="3">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="flex flex-col h-48">
+            <div
+              class="border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex-auto flex justify-center items-center font-medium">
+              Order in transit 🚚🚚🚚
+            </div>
+          </div>
+        </ng-template>
+      </p-step-panel>
+
+
+      <p-step-panel [value]="4">
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="flex flex-col h-48">
+            <div
+              class="border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex-auto flex justify-center items-center font-medium">
+              You received your order 🎉🎉🎉
+            </div>
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-panels>
+  </p-stepper>
+</div>

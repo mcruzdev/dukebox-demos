@@ -1,0 +1,22 @@
+<p-toolbar>
+  <ng-template #start>
+    <h1 class="text-xl font-semibold">DukeBox</h1>
+  </ng-template>
+
+  <ng-template #end>
+    <div class="flex gap-x-2 justify-center items-center">
+      <p-button severity="secondary" (onClick)="seeOrders()">📦<span>See your orders</span></p-button>
+
+      <a href="https://github.com/mcruzdev/dukebox-demo" pButton target="_blank"
+        class="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent" rel="noopener noreferrer">
+        <img class="rounded-full" src="github.svg" width="32" />
+      </a>
+    </div>
+  </ng-template>
+</p-toolbar>
+<div class="flex flex-row items-center justify-center gap-x-8">
+  <p-image src="/dukeboximage.png" alt="Duke, the Java mascot, holding a cardboard box" width="180"></p-image>
+  <span class="text-xl font-bold bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent">with</span>
+  <p-image src="/dapr.png" alt="Dapr.io logo" width="180"></p-image>
+</div>
+<router-outlet />
