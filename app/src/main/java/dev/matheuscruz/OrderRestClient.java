@@ -16,8 +16,11 @@ public interface OrderRestClient {
     @POST
     OrderResponse sendOrder(OrderRequest request);
 
+    @POST
+    @Path("/outbox")
+    OrderResponse sendOrderTx(OrderRequest request);
+
     @GET
     @Path("/{orderId}")
     OrderResponse findById(@PathParam("orderId") String orderId);
 }
-

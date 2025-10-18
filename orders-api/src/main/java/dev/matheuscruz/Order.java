@@ -11,4 +11,3 @@ public record Order(String id, OrderStatus status, List<OrderItem> items) {
     public record OrderItem(Long id, String name, double price) {
     }
 }
-

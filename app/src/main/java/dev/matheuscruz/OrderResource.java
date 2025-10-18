@@ -26,7 +26,9 @@ public class OrderResource {
     public Response order(OrderRequest request) {
         Log.info(request);
         Log.info("Sending request to: " + sidecarUrl);
-        OrderResponse response = this.orderRestClient.sendOrder(request);
+        // The /orders/outbox in orders-api uses the Outbox pattern
+        // See more here: https://docs.dapr.io/developing-applications/building-blocks/state-management/howto-outbox/
+        OrderResponse response = this.orderRestClient.sendOrderTx(request);
         return Response.ok(response).build();
     }
 

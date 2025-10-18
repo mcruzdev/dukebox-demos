@@ -16,4 +16,4 @@ Home page:
 
 Look Order status:
 
-![dukebox-order-statusees](dukebox-order-statuses.png)
+![dukebox-order-statuses](dukebox-order-statuses.png)

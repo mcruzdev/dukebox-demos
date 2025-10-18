@@ -8,7 +8,7 @@ import { OrderService } from '../../order-service';
 
 @Component({
   selector: 'app-order-status',
-  imports: [Stepper, Step, StepList, StepPanels, StepPanel, Button],
+  imports: [Stepper, Step, StepList, StepPanels, StepPanel],
   templateUrl: './order-status.html',
   styleUrl: './order-status.scss'
 })

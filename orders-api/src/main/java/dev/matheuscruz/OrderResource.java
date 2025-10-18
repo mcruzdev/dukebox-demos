@@ -2,7 +2,9 @@ package dev.matheuscruz;
 
 import io.dapr.Topic;
 import io.dapr.client.DaprClient;
+import io.dapr.client.domain.ExecuteStateTransactionRequest;
 import io.dapr.client.domain.State;
+import io.dapr.client.domain.TransactionalStateOperation;
 import io.quarkus.logging.Log;
 import io.vertx.core.json.JsonObject;
 import jakarta.inject.Inject;
@@ -14,6 +16,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -24,6 +28,42 @@ public class OrderResource {
     DaprClient dapr;
 
     @POST
+    @Path("/outbox")
+    @Produces(value = "application/json")
+    @Consumes(value = "application/json")
+    public Response createWithOutbox(OrderRequest request) {
+        Log.info("Receiving request for creating an Order: " + request);
+
+        String uuid = UUID.randomUUID().toString();
+
+        Order order = new Order(uuid,
+                request.items().stream().map(i -> new Order.OrderItem(i.id(), i.name(), i.price())).toList());
+
+        /* outbox.yaml: metadata.name */
+        ExecuteStateTransactionRequest transactionRequest = new ExecuteStateTransactionRequest("postgres-outbox");
+
+        List<TransactionalStateOperation<?>> ops = new ArrayList<>();
+
+        State<Order> state = new State<>(order.id(), order, null);
+
+        TransactionalStateOperation<Order> upsertOps = new TransactionalStateOperation<>(
+                TransactionalStateOperation.OperationType.UPSERT, state);
+
+        ops.add(upsertOps);
+
+        transactionRequest.setOperations(ops);
+
+        dapr.executeStateTransaction(transactionRequest).block();
+
+        Log.info("Event (order.created) sent to 'rabbitmq' and order saved to the database using Outbox pattern");
+
+        return Response
+                .ok(new OrderResponse(order.id(), order.status(), order.items().stream()
+                        .map(item -> new OrderRequest.OrderItemRequest(item.id(), item.name(), item.price())).toList()))
+                .build();
+    }
+
+    @POST
     @Produces(value = "application/json")
     @Consumes(value = "application/json")
     public Response create(OrderRequest request) {
@@ -31,9 +71,8 @@ public class OrderResource {
 
         String uuid = UUID.randomUUID().toString();
 
-        Order order = new Order(
-                uuid, request.items().stream().map(i -> new Order.OrderItem(i.id(), i.name(), i.price())).toList()
-        );
+        Order order = new Order(uuid,
+                request.items().stream().map(i -> new Order.OrderItem(i.id(), i.name(), i.price())).toList());
 
         /* state.yaml: metadata.name */
         dapr.saveState("postgres", uuid, order).block();
@@ -43,19 +82,16 @@ public class OrderResource {
 
         Log.info("Event (order.created) sent to 'rabbitmq'");
 
-        return Response.ok(new OrderResponse(
-                order.id(),
-                order.status(),
-                order.items().stream().map(item ->
-                        new OrderRequest.OrderItemRequest(item.id(), item.name(), item.price())).toList()
-        )).build();
+        return Response
+                .ok(new OrderResponse(order.id(), order.status(), order.items().stream()
+                        .map(item -> new OrderRequest.OrderItemRequest(item.id(), item.name(), item.price())).toList()))
+                .build();
     }
 
     @GET
     @Path("/{orderId}")
     public Response findById(@PathParam("orderId") String orderId) {
-        State<Order> state = this.dapr.getState("postgres", orderId, Order.class)
-                .block();
+        State<Order> state = this.dapr.getState("postgres", orderId, Order.class).block();
         if (Objects.isNull(state.getValue())) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -69,9 +105,7 @@ public class OrderResource {
         Log.info("Status changed to 'order.prepared': " + event);
         JsonObject json = new JsonObject(event);
         Order order = json.getJsonObject("data").mapTo(Order.class);
-        dapr.saveState("postgres", order.id(), new Order(
-                order.id(), OrderStatus.PREPARED, order.items()
-        )).block();
+        dapr.saveState("postgres", order.id(), new Order(order.id(), OrderStatus.PREPARED, order.items())).block();
         return Response.ok().build();
     }
 
@@ -82,9 +116,7 @@ public class OrderResource {
         Log.info("Status changed to 'order.in-transit': " + event);
         JsonObject json = new JsonObject(event);
         Order order = json.getJsonObject("data").mapTo(Order.class);
-        dapr.saveState("postgres", order.id(), new Order(
-                order.id(), OrderStatus.IN_TRANSIT, order.items()
-        )).block();
+        dapr.saveState("postgres", order.id(), new Order(order.id(), OrderStatus.IN_TRANSIT, order.items())).block();
         return Response.ok().build();
     }
 
@@ -96,9 +128,7 @@ public class OrderResource {
         JsonObject json = new JsonObject(event);
         Order order = json.getJsonObject("data").mapTo(Order.class);
 
-        dapr.saveState("postgres", order.id(), new Order(
-                order.id(), OrderStatus.DELIVERED, order.items()
-        )).block();
+        dapr.saveState("postgres", order.id(), new Order(order.id(), OrderStatus.DELIVERED, order.items())).block();
         return Response.ok().build();
     }
 }

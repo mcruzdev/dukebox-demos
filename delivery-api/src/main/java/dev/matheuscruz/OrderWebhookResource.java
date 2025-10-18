@@ -1,6 +1,5 @@
 package dev.matheuscruz;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dapr.Topic;
 import io.dapr.client.DaprClient;
@@ -23,12 +22,16 @@ public class OrderWebhookResource {
 
     @POST
     @Topic(pubsubName = "rabbitmq", name = "order.created")
-    public void consume(String cloudEvent) throws JsonProcessingException {
+    public void consume(String cloudEvent) {
+
+        Log.info("Receiving cloudEvent: " + cloudEvent);
 
         // See https://github.com/quarkiverse/quarkus-dapr/issues/336
         JsonObject json = new JsonObject(cloudEvent);
 
-        Order order = json.getJsonObject("data").mapTo(Order.class);
+        String data = json.getString("data");
+
+        Order order = new JsonObject(data).mapTo(Order.class);
 
         Log.info("Handling order: " + order);
 
@@ -39,8 +42,7 @@ public class OrderWebhookResource {
             Log.info("Sending OrderPrepared event: " + order);
 
             Order prepared = new Order(order.id(), OrderStatus.PREPARED, order.items());
-            daprClient.publishEvent("rabbitmq", "order.prepared", prepared)
-                    .block();
+            daprClient.publishEvent("rabbitmq", "order.prepared", prepared).block();
 
             Log.info("Preparing Order with ID: " + order.id());
 
@@ -48,15 +50,13 @@ public class OrderWebhookResource {
 
             Log.info("Sending OrderInTransit event for Order: " + order);
             Order inTransit = new Order(order.id(), OrderStatus.IN_TRANSIT, order.items());
-            daprClient.publishEvent("rabbitmq", "order.in-transit", inTransit)
-                    .block();
+            daprClient.publishEvent("rabbitmq", "order.in-transit", inTransit).block();
 
             trySleepSeconds(7);
 
             Log.info("Sending OrderDelivered event for Order: " + order);
             Order delivered = new Order(order.id(), OrderStatus.DELIVERED, order.items());
-            daprClient.publishEvent("rabbitmq", "order.delivered", delivered)
-                    .block();
+            daprClient.publishEvent("rabbitmq", "order.delivered", delivered).block();
 
         }).start();
     }
