@@ -127,22 +127,16 @@ helm install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql --se
 ```
 
 Once we have these components up and running we can install the application by running from inside
-the `k8s/` directory:
+the `k8s/dapr/app` directory:
 
 ```bash
-kubectl apply -f .
-```
-
-Then Zipkin:
-
-```bash
-kubectl create deployment zipkin --image openzipkin/zipkin
+kubectl apply -f k8s/dapr
 ```
 
 Next you need to use `kubectl port-forward` to be able to send requests to the applications.
 
 ```bash
-kubectl port-forward svc/orders-api 8080:8080
+kubectl port-forward svc/dukebox 8080:8080
 ```
 
 Access the DukeBox application at [http://localhost:8080](http://localhost:8080).
@@ -159,10 +153,44 @@ and
 kubectl logs -f dukebox-<POD_ID>
 ```
 
+Access your browser at http://localhost:9411.
+
+### Tracing with Zipkin
+
+Once you have the app up and running you can install Zipkin:
+
+Install Cert-Manager:
+
+```shell
+helm install \
+  cert-manager oci://quay.io/jetstack/charts/cert-manager \
+  --version v1.19.1 \
+  --namespace cert-manager \
+  --create-namespace \
+  --set crds.enabled=true
+```
+
+Install Jaeger All-in-One:
+
+```shell
+helm repo add jaeger-all-in-one https://raw.githubusercontent.com/hansehe/jaeger-all-in-one/master/helm/charts
+helm install jaeger-all-in-one jaeger-all-in-one/jaeger-all-in-one
+```
+
+
+```bash
+kubectl create deployment zipkin --image openzipkin/zipkin
+kubectl expose deployment zipkin --type ClusterIP --port 9411
+```
+
 Viewing tracing:
 
 ```shell
 kubectl port-forward svc/zipkin 9411:9411
 ```
 
-Access your browser at http://localhost:9411.
+And apply the tracing configuration:
+
+```bash
+kubectl apply -f 
+```
