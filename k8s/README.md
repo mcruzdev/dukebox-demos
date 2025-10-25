@@ -45,7 +45,7 @@ For this we will use Quarkus Container Image Buildpack extension, it functions t
 From inside the `orders-api` directory you can run the following command to create a container:
 
 ```bash
-mvn clean package
+./mvnw clean package
 ```
 
 Once we have the container image created, we need to tag and push to the local registry, so the image can be used from our local cluster.
@@ -67,7 +67,7 @@ podman push localhost:5001/orders-api --tls-verify=false
 From inside the `delivery-api` directory you can run the following command to create a container:
 
 ```bash
-mvn clean package
+./mvnw clean package
 ```
 
 Once we have the container image created, we need to tag and push to the local registry, so the image can be used from our local cluster.
@@ -89,7 +89,7 @@ podman push localhost:5001/delivery-api --tls-verify=false
 From inside the `app` directory you can run the following command to create a container:
 
 ```bash
-mvn clean package
+./mvnw clean package
 ```
 
 Once we have the container image created, we need to tag and push to the local registry, so the image can be used from our local cluster.
