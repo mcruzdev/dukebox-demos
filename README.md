@@ -2,8 +2,7 @@
 
 ## DukeBox application with Dapr
 
-If you want to try this application, look the following [documentation](/k8s/README.md).
-
+**If you want to try this application, look the following [documentation](/k8s/README.md).**
 ## System Diagram
 
 ![c4-diagram](c4-diagram.svg)
