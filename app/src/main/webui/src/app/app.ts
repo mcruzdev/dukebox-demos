@@ -3,12 +3,12 @@ import { RouterOutlet } from '@angular/router';
 
 import { Toolbar } from 'primeng/toolbar';
 import { Image } from 'primeng/image';
-import { Button } from 'primeng/button';
+
 import { OrderService } from './order-service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Toolbar, Image, Button],
+  imports: [RouterOutlet, Toolbar, Image],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

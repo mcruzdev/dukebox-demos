@@ -1,6 +1,5 @@
 package dev.matheuscruz;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dapr.Topic;
 import io.dapr.client.DaprClient;
 import io.quarkus.logging.Log;
@@ -16,9 +15,6 @@ public class OrderWebhookResource {
 
     @Inject
     DaprClient daprClient;
-
-    @Inject
-    ObjectMapper mapper;
 
     @POST
     @Topic(pubsubName = "rabbitmq", name = "order.created")

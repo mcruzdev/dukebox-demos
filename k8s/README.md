@@ -126,8 +126,17 @@ Then PostgreSQL:
 helm install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql --set global.postgresql.auth.database=dapr --set global.postgresql.auth.postgresPassword=password
 ```
 
+After, install Jaeger All-in-One:
+
+```shell
+helm repo add jaeger-all-in-one https://raw.githubusercontent.com/hansehe/jaeger-all-in-one/master/helm/charts
+helm install jaeger-all-in-one jaeger-all-in-one/jaeger-all-in-one --set enableHttpOpenTelemetryCollector=true
+```
+
+The `enableHttpOpenTelemetryCollector=true` is necessary because we will use the OpenTelemetry Collector endpoint on [Tracing configuration](./dapr/collector-config-otel.yaml).
+
 Once we have these components up and running we can install the application by running from inside
-the `k8s/dapr/app` directory:
+the `k8s/dapr` directory:
 
 ```bash
 kubectl apply -f k8s/dapr
@@ -141,56 +150,29 @@ kubectl port-forward svc/dukebox 8080:8080
 
 Access the DukeBox application at [http://localhost:8080](http://localhost:8080).
 
-In a different terminals you can check the logs of the `orders-api` and `dukebox`:
+In a different terminals you can check the logs of the `orders-api`, `delivery-api` and `dukebox`:
 
+For orders-api app:
 ```bash
 kubectl logs -f orders-api-<POD_ID>
 ```
 
-and
+For dukebox app:
 
 ```bash
 kubectl logs -f dukebox-<POD_ID>
 ```
 
-Access your browser at http://localhost:9411.
-
-### Tracing with Zipkin
-
-Once you have the app up and running you can install Zipkin:
-
-Install Cert-Manager:
-
-```shell
-helm install \
-  cert-manager oci://quay.io/jetstack/charts/cert-manager \
-  --version v1.19.1 \
-  --namespace cert-manager \
-  --create-namespace \
-  --set crds.enabled=true
-```
-
-Install Jaeger All-in-One:
-
-```shell
-helm repo add jaeger-all-in-one https://raw.githubusercontent.com/hansehe/jaeger-all-in-one/master/helm/charts
-helm install jaeger-all-in-one jaeger-all-in-one/jaeger-all-in-one
-```
-
+And for delivery-api app:
 
 ```bash
-kubectl create deployment zipkin --image openzipkin/zipkin
-kubectl expose deployment zipkin --type ClusterIP --port 9411
+kubectl logs -f delivery-api-<POD_ID>
 ```
+
+Access your browser at <http://localhost:9411>.
 
 Viewing tracing:
 
 ```shell
-kubectl port-forward svc/zipkin 9411:9411
-```
-
-And apply the tracing configuration:
-
-```bash
-kubectl apply -f 
+ kubectl port-forward svc/jaeger-all-in-one 16686:16686
 ```

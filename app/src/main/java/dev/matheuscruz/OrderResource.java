@@ -29,6 +29,9 @@ public class OrderResource {
         // The /orders/outbox in orders-api uses the Outbox pattern
         // See more here: https://docs.dapr.io/developing-applications/building-blocks/state-management/howto-outbox/
         OrderResponse response = this.orderRestClient.sendOrderTx(request);
+
+        Log.info("sendOrderTx() response: " + response);
+
         return Response.ok(response).build();
     }
 
@@ -45,8 +48,10 @@ public class OrderResource {
     public Response orderCreated(String event) {
         Log.info("Status changed to 'order.created': " + event);
         JsonObject json = new JsonObject(event);
+        JsonObject dataJson = new JsonObject(json.getString("data")); // data is text/plain (issue)
         DukeBoxWebSocket.getSession("default")
-                .ifPresent(session -> session.getAsyncRemote().sendText(json.getJsonObject("data").encode()));
+                .ifPresent(session -> session.getAsyncRemote().sendText(dataJson.encode()));
+
         return Response.ok().build();
     }
 

@@ -4,6 +4,9 @@ import io.dapr.Topic;
 import io.dapr.client.DaprClient;
 import io.dapr.client.domain.ExecuteStateTransactionRequest;
 import io.dapr.client.domain.State;
+import io.dapr.client.domain.StateOptions;
+import io.dapr.client.domain.StateOptions.Concurrency;
+import io.dapr.client.domain.StateOptions.Consistency;
 import io.dapr.client.domain.TransactionalStateOperation;
 import io.quarkus.logging.Log;
 import io.vertx.core.json.JsonObject;
@@ -18,6 +21,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -44,7 +48,7 @@ public class OrderResource {
 
         List<TransactionalStateOperation<?>> ops = new ArrayList<>();
 
-        State<Order> state = new State<>(order.id(), order, null);
+        State<Order> state = new State<>(order.id(), order, null, Map.of(), new StateOptions(Consistency.STRONG, Concurrency.FIRST_WRITE));
 
         TransactionalStateOperation<Order> upsertOps = new TransactionalStateOperation<>(
                 TransactionalStateOperation.OperationType.UPSERT, state);
@@ -93,11 +97,22 @@ public class OrderResource {
     public Response findById(@PathParam("orderId") String orderId) {
         State<Order> state = this.dapr.getState("postgres", orderId, Order.class).block();
         if (Objects.isNull(state.getValue())) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(state.getValue()).build();
-    }
 
+            Log.info("Get from postgres-outbox statestore");
+            
+            State<Order> stateOutbox = this.dapr.getState("postgres-outbox", orderId, Order.class).block();
+            
+            if (Objects.isNull(stateOutbox.getValue())) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+            return Response.ok(state.getValue()).build();
+
+        } else {
+            return Response.ok(state.getValue()).build();
+        }
+    }
+    
     @POST
     @Path("/webhook/prepared")
     @Topic(pubsubName = "rabbitmq", name = "order.prepared")
